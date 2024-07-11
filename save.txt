@@ -1,0 +1,69 @@
+{
+    "dest": "",
+    "enemy": "",
+    "fight": false,
+    "lastInput": "",
+    "menu": false,
+    "notifications": [
+        {
+            "color": "yellow",
+            "text": "Welcome to the game!"
+        },
+        {
+            "color": "white",
+            "text": ""
+        },
+        {
+            "color": "white",
+            "text": ""
+        },
+        {
+            "color": "white",
+            "text": ""
+        },
+        {
+            "color": "white",
+            "text": ""
+        },
+        {
+            "color": "white",
+            "text": ""
+        }
+    ],
+    "play": true,
+    "player": {
+        "inventory": {
+            "armor": "none",
+            "potions": [
+                {
+                    "amount": 4,
+                    "name": "healing"
+                },
+                {
+                    "amount": 2,
+                    "name": "mana"
+                }
+            ],
+            "weapons": "fists"
+        },
+        "name": "ds",
+        "pos": {
+            "x": 0,
+            "y": 0
+        },
+        "stats": {
+            "attack": 10,
+            "defense": 10,
+            "exp": 75,
+            "gold": 23456,
+            "hp": 10,
+            "level": 1,
+            "max_hp": 100,
+            "next_lvl_exp": 100,
+            "speed": 10
+        }
+    },
+    "rules": false,
+    "run": true,
+    "standing": false
+}
