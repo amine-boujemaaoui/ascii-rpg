@@ -1,38 +1,39 @@
 e = {
     "slime": {
-        "hp": 10,
+        "min_hp": 5,
         "max_hp": 10,
-        "attack": 1,
-        "exp": 1,
-        "gold": 1,
+        "min_atk": 1,
+        "max_atk": 2,
+        "min_exp": 5,
+        "max_exp": 10,
+        "min_gold": 1,
+        "max_gold": 2,
+        
+        "possible_weapons": [],
+        "possible_armors": [],
     },
     "Goblin": {
-        "hp": 100,
-        "max_hp": 100,
-        "attack": 10,
-        "exp": 10,
-        "gold": 10,
-    },
-    "Orc": {
-        "hp": 200,
-        "max_hp": 200,
-        "attack": 20,
-        "exp": 20,
-        "gold": 20,
-    },
-    "Troll": {
-        "hp": 300,
-        "max_hp": 300,
-        "attack": 30,
-        "exp": 30,
-        "gold": 30,
-    },
-    "Dragon": {
-        "hp": 400,
-        "max_hp": 400,
-        "attack": 40,
-        "exp": 40,
-        "gold": 40,
+        "min_hp": 10,
+        "max_hp": 20,
+        "min_atk": 2,
+        "max_atk": 4,
+        "min_exp": 20,
+        "max_exp": 40,
+        "min_gold": 2,
+        "max_gold": 4,
+        
+        "possible_weapons": [
+            {
+                "name": "sword",
+                "percent": 10,
+            },
+        ],
+        "possible_armors": [
+            {
+                "name": "leather",
+                "percent": 20,
+            },
+        ],
     },
 }
 
