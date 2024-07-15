@@ -13,39 +13,42 @@ c = {
 }
 
 bg = {
-    "bg_black": "\033[40m",
-    "bg_red": "\033[41m",
-    "bg_green": "\033[42m",
-    "bg_yellow": "\033[43m",
-    "bg_blue": "\033[44m",
-    "bg_magenta": "\033[45m",
-    "bg_cyan": "\033[46m",
-    "bg_white": "\033[47m",
-    "bg_gray": "\033[100m",
+    "black": "\033[40m",
+    "red": "\033[41m",
+    "green": "\033[42m",
+    "yellow": "\033[43m",
+    "blue": "\033[44m",
+    "magenta": "\033[45m",
+    "cyan": "\033[46m",
+    "white": "\033[47m",
+    "gray": "\033[100m",
+    "orange": "\033[101m",
 }
 
 br = {
-    "bright_black": "\033[90m",
-    "bright_red": "\033[91m",
-    "bright_green": "\033[92m",
-    "bright_yellow": "\033[93m",
-    "bright_blue": "\033[94m",
-    "bright_magenta": "\033[95m",
-    "bright_cyan": "\033[96m",
-    "bright_white": "\033[97m",
-    "bright_gray": "\033[37m",
+    "black": "\033[90m",
+    "red": "\033[91m",
+    "green": "\033[92m",
+    "yellow": "\033[93m",
+    "blue": "\033[94m",
+    "magenta": "\033[95m",
+    "cyan": "\033[96m",
+    "white": "\033[97m",
+    "gray": "\033[37m",
+    "orange": "\033[33m",
 }
 
 bg_br = {
-    "bg_bright_black": "\033[100m",
-    "bg_bright_red": "\033[101m",
-    "bg_bright_green": "\033[102m",
-    "bg_bright_yellow": "\033[103m",
-    "bg_bright_blue": "\033[104m",
-    "bg_bright_magenta": "\033[105m",
-    "bg_bright_cyan": "\033[106m",
-    "bg_bright_white": "\033[107m",
-    "bg_bright_gray": "\033[47m",
+    "black": "\033[100m",
+    "red": "\033[101m",
+    "green": "\033[102m",
+    "yellow": "\033[103m",
+    "blue": "\033[104m",
+    "magenta": "\033[105m",
+    "cyan": "\033[106m",
+    "white": "\033[107m",
+    "gray": "\033[47m",
+    "orange": "\033[43m",
 }
 
 s = {
@@ -55,6 +58,7 @@ s = {
     "reverse": "\033[7m",
     "hidden": "\033[8m",
     "italic": "\033[3m",
+    "strike": "\033[9m",
 }
 
 r = "\033[0m"

@@ -1,26 +1,27 @@
 import enemies as en
 
 gs = {
+    'map': 'null',
     'player': {
         'name': '',
         'stats': {
-            'hp': 10,
+            'hp': 100,
             'max_hp': 100,
             'attack': 10,
             'defense': 10,
             'speed': 10,
             'level': 1,
-            'exp': 75,
+            'exp': 0,
             'next_lvl_exp': en.exp_table.get(1),
-            'gold': 23456,
+            'gold': 0,
         },
-        'inventory': {
+        'equipment': {
             'weapons': 'fists',
             'armor': 'none',
             'potions': [
                 {
                     'name': 'healing',
-                    'amount': 4,
+                    'amount': 2,
                 },
                 {
                     'name': 'mana',
@@ -28,18 +29,52 @@ gs = {
                 },
             ]
         },
+        'inventory': [
+            {
+                'type': 'weapon',
+                'name': 'sword',
+                'attack': 10,
+            },
+            {
+                'type': 'weapon',
+                'name': 'axe',
+                'attack': 15,
+            },
+            {
+                'type': 'armor',
+                'name': 'leather',
+                'defense': 10,
+            }
+        ],
         'pos': {
             'x': 0,
             'y': 0,
         }
     },
-    'menu': True,
+    'menu': False,
     'rules': False,
-    'play': False,
+    'play': True,
     'run': True,
     'fight': False,
     'standing': False,
+    'shop': False,
+    'inventory': False,
+    'help': False,
     'enemy': '',
+    'enemy_stats': {
+        'hp': 0,
+        'atk': 0,
+        'exp': 0,
+        'gold': 0,
+        'weapon': {
+            'name': '',
+            'attack': 0,
+        },
+        'armor': {
+            'name': '',
+            'defense': 0,
+        },
+    },
     'dest': "",
     'notifications': [
             {"text": "Welcome to the game!", "color": "yellow"},
