@@ -335,7 +335,7 @@ def draw_instructions():
     instructions = [
         f"{c.c['cyan']}┌───────────┐{c.r}",
         f"{c.c['cyan']}│           │{c.r}",
-        f"{c.c['cyan']}│{c.r} buy <it>  {c.c['cyan']}│{c.r}",
+        f"{c.c['cyan']}│{c.r} buy  <it> {c.c['cyan']}│{c.r}",
         f"{c.c['cyan']}│{c.r} sell <it> {c.c['cyan']}│{c.r}",
         f"{c.c['cyan']}│{c.r} exit      {c.c['cyan']}│{c.r}",
         f"{c.c['cyan']}│           {c.c['cyan']}│{c.r}",
@@ -478,23 +478,32 @@ def print_equipment():
         
         
 def draw_help():
-    line_length = 50  # Adjust the line length as needed
-    commands = [
-        {"command": "w", "description": "Move north"},
-        {"command": "s", "description": "Move south"},
-        {"command": "a", "description": "Move west"},
-        {"command": "d", "description": "Move east"},
-        {"command": "save", "description": "Save the game"},
-        {"command": "quit", "description": "Quit the game"},
-        {"command": "life", "description": "Display current HP"},
-        {"command": "equip <item_name>", "description": "Equip the specified item"},
-        {"command": "inventory", "description": "Display the inventory"}
-    ]
+    line_length = 67  # Adjust the line length as needed
+    empty_line = f"{' ' * (line_length)}"
+    categories = {
+        "Directions": [
+            {"command": "w", "description": "Move north"},
+            {"command": "s", "description": "Move south"},
+            {"command": "a", "description": "Move west"},
+            {"command": "d", "description": "Move east"}
+        ],
+        "Commands": [
+            {"command": "save", "description": "Save the game"},
+            {"command": "quit", "description": "Quit the game"},
+            {"command": "life", "description": "Display current HP"},
+            {"command": "equip <item_name>", "description": "Equip the specified item"},
+            {"command": "inventory", "description": "Display the inventory"},
+            {"command": "help", "description": "Display this help menu"}
+        ]
+    }
 
     help_lines = []
-    for cmd in commands:
-        command_str = f"{cmd['command']:<20} - {cmd['description']}"
-        help_lines.append(command_str.ljust(line_length))
+    for category, cmds in categories.items():
+        help_lines.append(f"{c.bg['white']}{c.c['black']}{category}:{c.r}{' ' * (line_length - len(category) - 1)}")
+        for cmd in cmds:
+            command_str = f"  {cmd['command']:<20} - {cmd['description']}"
+            help_lines.append(command_str.ljust(line_length))
+        help_lines.append(empty_line)  
 
     return draw_outlines("Help", help_lines, line_length)
 
@@ -508,6 +517,10 @@ def print_help():
 def print_game():
     if s.gs['play']:
         print_play()
+    elif s.gs['rules']:
+        f.cls()
+        print(title)
+        print(rules)
     elif s.gs['fight']:
         print_fight()
     elif s.gs['shop']:
@@ -521,7 +534,3 @@ def print_game():
         print_help()
     else:
         print(title_screen)
-        
-        
-        
-        

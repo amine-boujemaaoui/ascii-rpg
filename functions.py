@@ -13,17 +13,41 @@ from map import Map
 def cls():
     os.system('cls' if os.name == 'nt' else 'clear')
     
+def change_state(last_state: str, new_state: str):
+    s.gs['lastUI'] = last_state
+    s.gs[last_state] = False
+    s.gs[new_state] = True
+    
 def i(string: str = ""):
     if string == "": 
         return input(f"{ui.prompt}")
     return input(f"{ui.prompt}{c.c['yellow']}{string}{c.r}\n{ui.prompt}")
+
+def level_up():
+    player = s.gs['player']
+    current_level = player['stats']['level']
+    current_exp = player['stats']['exp']
+    
+    if current_exp >= en.exp_table[current_level]:
+        player['stats']['level'] += 1
+        player['stats']['max_hp'] += 10  # Augmente les HP max du joueur à chaque niveau
+        player['stats']['attack'] += 2   # Augmente l'attaque du joueur à chaque niveau
+        player['stats']['defense'] += 2  # Augmente la défense du joueur à chaque niveau
+        player['stats']['speed'] += 1    # Augmente la vitesse du joueur à chaque niveau
+        add_notification(f"└─> You leveled up to level {player['stats']['level']}!", "gray")
+        add_notification(f"┬>Congratulation !", "green")
+        
+        current_level = player['stats']['level']
+        if current_level in en.exp_table:
+            player['stats']['next_lvl_exp'] = en.exp_table[current_level]
+        else:
+            player['stats']['next_lvl_exp'] = float('inf')  # Plus de niveaux à atteindre
+
     
 def rules():
-    cls()
-    print(ui.title)
-    print(ui.rules)
+    ui.print_game()
     i(f"{c.c['gray']}{c.s['italic']}Press enter to return to the main menu.{c.r}")
-    return False
+    change_state('rules', 'menu')
 
 def title_screen():
     cls()
@@ -44,11 +68,10 @@ def new_game():
         s.gs['player']['name'] = i("What is your name?")
         
     if s.gs['player']['name'] == "cancel":
-        s.gs['menu'] = True
+        change_state('menu', 'menu')
         return
-            
-    s.gs['play'] = True
-    s.gs['menu'] = False
+        
+    change_state('menu', 'play')
 
 def menu():
     while s.gs['menu']:
@@ -57,15 +80,17 @@ def menu():
         else:
             choice = title_screen()
             match choice:
-                case "1":
+                case "1" | "new":
                     new_game()
-                case "2":
+                case "2" | "load":
                     load_saved_game()
-                case "3":
-                    s.gs['rules'] = True
-                case "4":
-                    s.gs['run'] = False
-                    s.gs['menu'] = False
+                case "3" | "rules":
+                    change_state('menu', 'rules')
+                case "4" | "quit":
+                    quit()
+                case "help":
+                    change_state('menu', 'help')
+                    help()
                 case _:
                     print(f"{c.c['red']}Invalid choice!{c.r}")
                     time.sleep(2)
@@ -90,11 +115,12 @@ def load_game():
     if isinstance(saved_data['map'], dict):
         s.gs['map'] = Map.from_dict(saved_data['map'])
     else:
-        s.gs['map'] = Map()  # Default initialization if map is not a dict
+        s.gs['map'] = Map()  # Initialisation par défaut si la carte n'est pas un dictionnaire
 
     # Charger les autres données de l'état du jeu
-    s.gs.update(saved_data)
-    
+    for key, value in saved_data.items():
+        if key != 'map':
+            s.gs[key] = value    
 
     
 def get_biome():
@@ -103,11 +129,11 @@ def get_biome():
 def load_saved_game():
     try:
         load_game()
-        s.gs['menu'] = False
-        s.gs['play'] = True
+        change_state('menu', 'play')
     except FileNotFoundError:
         print(f"{c.c['red']}Failed to load the game.{c.r}")
         time.sleep(2)
+
         
 def add_notification(new_notification_text, new_notification_color="white"):
     if 'notifications' not in s.gs:
@@ -127,12 +153,11 @@ def check_tile():
     if current_tile.biome['name'] == 'shop':
         add_notification(f"You entered a shop.", "magenta")
         time.sleep(2)
-        s.gs['shop'] = True
-        s.gs['play'] = False
+        change_state('play', 'shop')
         shop()
 
 def shop():
-    s.gs['shop'] = True
+    change_state('play', 'shop')
     while s.gs['shop']:
         ui.print_game()
         s.gs['lastInput'] = i()
@@ -140,13 +165,10 @@ def shop():
         match s.gs['lastInput']:
             case "exit":
                 add_notification("You left the shop.", "magenta")
-                s.gs['shop'] = False
-                s.gs['play'] = True
+                change_state('shop', 'play')
                 time.sleep(2)
             case "inventory":
-                s.gs['play'] = False
-                s.gs['menu'] = False
-                s.gs['equip'] = True
+                change_state('shop', 'inventory')
             case _:
                 handle_shop_interaction()
 
@@ -237,6 +259,7 @@ def sell_item(item_name):
 def equip_item(item_name):
     if item_name == "fists":
         s.gs['player']['equipment']['weapons'] = 'fists'
+        s.gs['player']['stats']['attack'] = 5
         add_notification("You equipped fists as your weapon.", "green")
         return
     elif item_name == "":
@@ -252,9 +275,11 @@ def equip_item(item_name):
     if item_to_equip:
         if item_to_equip['type'] == 'weapon':
             player['equipment']['weapons'] = item_to_equip['name']
+            player['stats']['attack'] = item_to_equip['attack']
             add_notification(f"You equipped {item_name} as your weapon.", "green")
         elif item_to_equip['type'] == 'armor':
             player['equipment']['armor'] = item_to_equip['name']
+            player['stats']['defense'] = item_to_equip['defense']
             add_notification(f"You equipped {item_name} as your armor.", "green")
         else:
             add_notification(f"{item_name} is not a valid item to equip.", "red")
@@ -336,8 +361,7 @@ def play():
             case ["quit"]:
                 add_notification("Quiting game...", "magenta")
                 time.sleep(2)
-                s.gs['play'] = False
-                s.gs['menu'] = True
+                change_state('play', 'menu')
             
             case ["life"]:
                 add_notification(f"You have {s.gs['player']['stats']['hp']} HP.", "green")
@@ -347,21 +371,16 @@ def play():
                 equip_item(item_name)
             
             case ["inventory"]:
-                s.gs['play'] = False
-                s.gs['menu'] = False
-                s.gs['inventory'] = True
+                change_state('play', 'inventory')
                 inventory()
                 
             case ["help"]:
-                s.gs['play'] = False
-                s.gs['menu'] = False
-                s.gs['help'] = True
+                change_state('play', 'help')
                 s.gs['lastUI'] = "play"
                 help()
 
             case _:
                 add_notification("Invalid command.", "red")
-
 
 
 def assign_enemy_weapon():
@@ -432,9 +451,7 @@ def fight():
             case "4":
                 choice = "escape"
             case "inventory":
-                s.gs['play'] = False
-                s.gs['menu'] = False
-                s.gs['equip'] = True
+                change_state('fight', 'inventory')
         
         match choice:
             case "attack":
@@ -445,10 +462,11 @@ def fight():
                 if s.gs['enemy_stats']['hp'] <= 0:
                     s.gs['player']['stats']['exp'] += s.gs['enemy_stats']['exp']
                     s.gs['player']['stats']['gold'] += s.gs['enemy_stats']['gold']
-                    add_notification(f"- You defeated the {s.gs['enemy']}!", "green")
-                    add_notification(f"- You gained {s.gs['enemy_stats']['exp']} experience and {s.gs['enemy_stats']['gold']} gold", "yellow")
-                    s.gs['fight'] = False
-                    s.gs['play'] = True
+                    add_notification(f"└─> You gained {s.gs['enemy_stats']['exp']} experience", "yellow")
+                    add_notification(f"├─> You gained {s.gs['enemy_stats']['gold']} gold", "yellow")
+                    add_notification(f"┬> You defeated the {s.gs['enemy']}!", "green")
+                    level_up()
+                    change_state('fight', 'play')
                     s.gs['standing'] = False
                     time.sleep(2)
                 else:
@@ -457,9 +475,7 @@ def fight():
                 
                 if s.gs['player']['stats']['hp'] <= 0:
                     add_notification(f"You died! Game over !", "red")
-                    s.gs['fight'] = False
-                    s.gs['play'] = False
-                    s.gs['menu'] = True
+                    change_state('fight', 'menu')
                     s.gs['standing'] = False
                     time.sleep(2)
                 
@@ -503,13 +519,16 @@ def inventory():
         
         match s.gs['lastInput'].split():
             case ["exit"]:
-                s.gs['inventory'] = False
-                s.gs['play'] = True
+                change_state('inventory', 'play')
             case ["equip", item_name]:
                 item_name = " ".join(item_name)  # In case item_name consists of multiple words
                 equip_item(item_name)
+            case ["help"]:
+                change_state('inventory', 'help')
+                help()
             case _:
                 add_notification("Invalid command.", "red")
+            
                 
 def help():
     s.gs['help'] = True
@@ -517,6 +536,4 @@ def help():
         cls()
         ui.print_game()
         i(f"{c.c['gray']}{c.s['italic']}Press enter to return to the main menu.{c.r}")
-        s.gs['help'] = False
-        s.gs[s.gs['lastUI']] = True
-                
+        change_state('help', s.gs['lastUI'])

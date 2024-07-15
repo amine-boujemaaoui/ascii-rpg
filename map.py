@@ -6,9 +6,9 @@ class Map:
         self.width = width
         self.height = height
         self.map = self.generate_map()
-        self.generate_patch(Tile('w'), 1, 5, 7)
-        self.generate_patch(Tile('s'), 2, 2, 5)
-        self.generate_patch(Tile('m'), 2, 3, 5)
+        self.generate_patch(Tile('w'), 2, 5, 7)
+        self.generate_patch(Tile('s'), 3, 3, 6)
+        self.generate_patch(Tile('m'), 2, 4, 7)
         self.generate_patch(Tile('f'), 5, 5, 10)
         self.generate_shop(0.5)
 

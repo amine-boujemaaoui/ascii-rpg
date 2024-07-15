@@ -51,9 +51,9 @@ gs = {
             'y': 0,
         }
     },
-    'menu': False,
+    'menu': True,
     'rules': False,
-    'play': True,
+    'play': False,
     'run': True,
     'fight': False,
     'standing': False,

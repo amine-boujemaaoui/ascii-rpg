@@ -32,7 +32,7 @@ bioms = {
     },
     'f': {
         'name': 'forest',
-        'color': c.c['green'],
+        'color': c.c['dark_green'],
         'emoji': '🌲',
         'enemy': True,
         'symbol': '*',

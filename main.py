@@ -6,6 +6,8 @@ if __name__ == "__main__":
     while s.gs['run']:
         if s.gs['menu']:
             f.menu()
+        if s.gs['rules']:
+            f.rules()
         if s.gs['play']:
             f.play()
         if s.gs['fight']:
