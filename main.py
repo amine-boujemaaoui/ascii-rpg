@@ -3,6 +3,8 @@ import states as s
 
 if __name__ == "__main__":
     
+    f.set_console_size(71, 34)
+    
     while s.gs['run']:
         if s.gs['menu']:
             f.menu()

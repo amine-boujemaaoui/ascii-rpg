@@ -3,6 +3,7 @@ import states as s
 import mapInfos as m
 import functions as f
 import enemies as en
+import shop as sh
 
 title_screen = f"""{c.c['cyan']}│{c.r}                        ┌────────────────────┐                       {c.c['cyan']}│{c.r}
 {c.c['cyan']}│{c.r}                        │  1. New Game       │                       {c.c['cyan']}│{c.r}
@@ -93,8 +94,6 @@ def draw_label_line(label, line_length):
     padding_total = line_length - label_length + 9
     return f"{c.c['white']}{label}{c.r}{' ' * padding_total}"
 
-
-
 def draw_bar(value, value_max, size, fillColor, emptyColor, fill='█', empty='░'):
     value_ratio = min(max(value / value_max, 0.0), 1.0)
     
@@ -105,8 +104,7 @@ def draw_bar(value, value_max, size, fillColor, emptyColor, fill='█', empty='�
     empty_bar = f"{emptyColor}{empty * empty_size}{c.r}"
     
     bar = f"{filled_bar}{empty_bar}"
-    return bar
-    
+    return bar 
     
 def draw_hp_bar(value, value_max, size):
     value_ratio = value / value_max
@@ -121,7 +119,6 @@ def draw_hp_bar(value, value_max, size):
         fillColor = c.c['red']
     
     return draw_bar(value, value_max, size, fillColor, fillColor)
-
 
 def draw_outlines(title, content, line_length=20):
     table = [
@@ -139,7 +136,7 @@ def draw_map():
     player_pos_y = s.gs['player']['pos']['y']
     map_data = s.gs['map'].map
     map_width = len(map_data[0])
-    title = "🗺️ Map"
+    title = "Map"
     
     map_lines = []
     line_length = map_width
@@ -260,7 +257,7 @@ def draw_fight():
     enemy_stats = s.gs['enemy_stats']
     enemy_hp = enemy_stats['hp']
     enemy_max_hp = enemy_stats['max_hp']
-    enemy_hp_bar = draw_hp_bar(enemy_hp, enemy_max_hp, line_length)
+    enemy_hp_bar = draw_hp_bar(enemy_hp, enemy_max_hp, line_length - 15)
     
     enemy_weapon = enemy_stats['weapon']['name']
     if enemy_weapon == '':
@@ -271,65 +268,61 @@ def draw_fight():
     if enemy_armor == '':
         enemy_armor = "None"
     enemy_armor_defense = enemy_stats['armor']['defense']
-
+    
+    enemy_ascii_art = en.e[enemy_name]['ascii_art']
+    
     fight_screen = [
-        empty_line,
-        f"{draw_label_line(f"{c.c['red']}Enemy: {enemy_name}{c.r}", line_length)}",
-        f"{enemy_hp_bar}{c.r}",
-        empty_line,
-        f"{format_stat_line('Max HP', enemy_max_hp, line_length, 15)}",
-        f"{format_stat_line('Attack', enemy_stats['atk'], line_length, 15)}",
-        empty_line,
-        f"{format_stat_line('Weapon', "", line_length, 10)}",
-        f"{format_stat_line('  - Name', enemy_weapon, line_length, 15)}",
-        f"{format_stat_line('  - Attack', enemy_weapon_attack, line_length, 15)}",
-        empty_line,
-        f"{format_stat_line('Armor', "", line_length, 10)}",
-        f"{format_stat_line('  - Name', enemy_armor, line_length, 15)}",
-        f"{format_stat_line('  - Deffense', enemy_armor_defense, line_length, 9)}",
+        f"{enemy_ascii_art[0]} {empty_line[:(line_length - 14)]}",
+        f"{draw_label_line(f'{enemy_ascii_art[1]} {c.c['red']}Enemy: {enemy_name}{c.r}', line_length)}",
+        f"{draw_label_line(f'{enemy_ascii_art[2]} {enemy_hp_bar}', line_length + 9)}",
+        f"{enemy_ascii_art[3]} {empty_line[:(line_length - 14)]}",
+        f"{enemy_ascii_art[4]} {format_stat_line('Max HP', enemy_max_hp, (line_length - 14), 14)}",
+        f"{enemy_ascii_art[5]} {format_stat_line('Attack', enemy_stats['atk'], (line_length - 14), 14)}",
+        f"{enemy_ascii_art[6]} {empty_line[:(line_length - 14)]}",
         empty_line,
         empty_line,
+        f"{format_stat_line('  Weapon', '', line_length, 12)}",
+        f"{format_stat_line('    - Name', enemy_weapon, line_length, 17)}",
+        f"{format_stat_line('    - Attack', enemy_weapon_attack, line_length, 17)}",
+        empty_line,
+        f"{format_stat_line('  Armor', '', line_length, 12)}",
+        f"{format_stat_line('    - Name', enemy_armor, line_length, 17)}",
+        f"{format_stat_line('    - Defense', enemy_armor_defense, line_length, 17)}",
         empty_line,
         empty_line,
         empty_line,
         empty_line,
     ]
 
-    return draw_outlines("⚔️ Fight !", fight_screen, line_length)
+    return draw_outlines("Fight !", fight_screen, line_length)
 
 def draw_shop():
     line_length = 31
     empty_line = f"{' ' * (line_length)}"
 
-    available_weapons = [
-        {'name': 'sword', 'attack': 10, 'price': 100},
-        {'name': 'axe', 'attack': 15, 'price': 150},
-        {'name': 'bow', 'attack': 20, 'price': 200}
-    ]
-    available_armors = [
-        {'name': 'leather', 'defense': 10, 'price': 50},
-        {'name': 'chainmail', 'defense': 15, 'price': 100},
-        {'name': 'iron', 'defense': 20, 'price': 150}
-    ]
-
     shop_items = []
     shop_items.append(empty_line)
     shop_items.append(f"{c.bg['white']}{c.c['black']}{'Weapons:'.center(line_length)}{c.r}")
 
-    for weapon in available_weapons:
+    for weapon in sh.available_weapons:
         shop_items.append(f" {weapon['name'].ljust(12)} ATK: {str(weapon['attack']).ljust(3)} {str(weapon['price']).rjust(4)} ${' ' * 2}")
 
     shop_items.append(empty_line)
     shop_items.append(f"{c.bg['white']}{c.c['black']}{'Armors:'.center(line_length)}{c.r}")
 
-    for armor in available_armors:
+    for armor in sh.available_armors:
         shop_items.append(f" {armor['name'].ljust(12)} DEF: {str(armor['defense']).ljust(3)} {str(armor['price']).rjust(4)} ${' ' * 2}")
+
+    shop_items.append(empty_line)
+    shop_items.append(f"{c.bg['white']}{c.c['black']}{'Potions:'.center(line_length)}{c.r}")
+
+    for potion in available_potions:
+        shop_items.append(f" {potion['name'].ljust(12)} {str(potion['effect']).ljust(5)} {str(potion['price']).rjust(4)} ${' ' * 5}")
 
     shop_items.append(empty_line)
     shop_items.append(f"{'Player Gold:'.ljust(line_length - len(str(s.gs['player']['stats']['gold'])) - 2)}{c.bg['yellow']}{c.c['black']}{str(s.gs['player']['stats']['gold']).rjust(len(str(s.gs['player']['stats']['gold'])))} ${c.r}")
 
     return draw_outlines("Shop", shop_items, line_length)
-
 
 def draw_instructions():
     instructions = [
@@ -343,7 +336,6 @@ def draw_instructions():
         f"{c.c['cyan']}└───────────┘{c.r}",
     ]
     return instructions
-
 
 def draw_actions():
     actions = [
@@ -421,13 +413,11 @@ def draw_inventory():
 
     return draw_outlines("Inventory", inventory_items, line_length)
 
-
 def print_inventory():
     f.cls()
     inventory_lines = draw_inventory()
     for line in inventory_lines:
-        print(line)
-        
+        print(line)      
 
 def print_shop():
     f.cls()
@@ -436,6 +426,11 @@ def print_shop():
     instructions_lines = draw_instructions()
     notification_box = draw_notifications()
     current_biome_lines = current_biome()
+    
+    line_length = 33
+    empty_line = f"{c.c['cyan']}│{c.r}{' ' * (line_length)}{c.c['cyan']}│{c.r}"
+    for _ in range(4):
+        inventory_lines.insert(-2, empty_line)
 
     # Afficher shop et inventory
     for shop_line, inventory_line in zip(shop_lines, inventory_lines):
@@ -475,8 +470,7 @@ def print_equipment():
 
     for stats_line, equipment_line, notification_line in zip(stats_lines, equipment_lines, notification_box):
         print(f"{stats_line} {equipment_line} {notification_line}")
-        
-        
+                
 def draw_help():
     line_length = 67  # Adjust the line length as needed
     empty_line = f"{' ' * (line_length)}"
@@ -512,7 +506,6 @@ def print_help():
     help_lines = draw_help()
     for line in help_lines:
         print(line)
-
 
 def print_game():
     if s.gs['play']:

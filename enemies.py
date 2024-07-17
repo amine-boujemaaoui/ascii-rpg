@@ -8,9 +8,18 @@ e = {
         "max_exp": 10,
         "min_gold": 1,
         "max_gold": 2,
-        
         "possible_weapons": [],
         "possible_armors": [],
+        'ascii_art': [
+            "╭───────────╮",
+            "│    ___    │",
+            "│   /   \   │",
+            "│  /     \  │",
+            "│  \     /  │",
+            "│   \___/   │",
+            "╰───────────╯",
+        ],
+        "spawn_biome": "mountain"
     },
     "Goblin": {
         "min_hp": 10,
@@ -21,7 +30,6 @@ e = {
         "max_exp": 40,
         "min_gold": 2,
         "max_gold": 4,
-        
         "possible_weapons": [
             {
                 "name": "sword",
@@ -34,6 +42,16 @@ e = {
                 "percent": 20,
             },
         ],
+        'ascii_art': [
+            "╭───────────╮",
+            "│   _____   │",
+            "│  /     \  │",
+            "│ | () () | │",
+            "│  \  ^  /  │",
+            "│   |||||   │",
+            "╰───────────╯",
+        ],
+        "spawn_biome": "forest"
     },
 }
 

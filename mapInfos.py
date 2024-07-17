@@ -4,10 +4,11 @@ import random
 bioms = {
     'g': {
         'name': 'grass',
-        'color': c.c['green'],
+        'color': c.c['gray'],
         'emoji': '🌱',
         'enemy': False,
         'symbol': '.',
+        'solid': False,
     },
     'w': {
         'name': 'water',
@@ -15,6 +16,7 @@ bioms = {
         'emoji': '🌊',
         'enemy': False,
         'symbol': '~',
+        'solid': True,
     },
     's': {
         'name': 'sand',
@@ -22,13 +24,15 @@ bioms = {
         'emoji': '🏖️',
         'enemy': False,
         'symbol': 's',
+        'solid': False,
     },
     'm': {
         'name': 'mountain',
-        'color': c.c['gray'],
+        'color': c.c['light_gray'],
         'emoji': '⛰️',
         'enemy': True,
         'symbol': '^',
+        'solid': False,
     },
     'f': {
         'name': 'forest',
@@ -36,6 +40,7 @@ bioms = {
         'emoji': '🌲',
         'enemy': True,
         'symbol': '*',
+        'solid': False,
     },
     'shop': {
         'name': 'shop',
@@ -43,6 +48,7 @@ bioms = {
         'emoji': '🏪',
         'enemy': False,
         'symbol': '$',
+        'solid': False,
     },
     'castle': {
         'name': 'castle',
@@ -50,6 +56,7 @@ bioms = {
         'emoji': '🏰',
         'enemy': False,
         'symbol': 'C',
+        'solid': False,
     },
     'player': {
         'name': 'player',
@@ -57,16 +64,16 @@ bioms = {
         'emoji': '🧑',
         'enemy': False,
         'symbol': 'P',
-        
+        'solid': False,
     },
 }
 
 ascii_art = {
     'grass': [
-        "  __  ",
-        " /  \\ ",
-        "|    |",
-        "|_||_|"
+        "  __   ",
+        " /  \  ",
+        "|    | ",
+        "|_||_| "
     ],
     'water': [
         " ~ ~ ~ ",
@@ -100,8 +107,8 @@ ascii_art = {
     ],
     'castle': [
         "|¯¯|¯¯|",
-        "|_  _|",
-        "|    |",
-        "|_||_|"
+        "|_   _|",
+        "|  _  |",
+        "|_| |_|"
     ]
 }

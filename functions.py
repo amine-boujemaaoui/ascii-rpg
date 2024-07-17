@@ -9,9 +9,13 @@ import random
 import enemies as en
 import objects as obj
 from map import Map
+import shop as sh
 
 def cls():
     os.system('cls' if os.name == 'nt' else 'clear')
+
+def set_console_size(columns, lines):
+    os.system(f'mode con: cols={columns} lines={lines}')
     
 def change_state(last_state: str, new_state: str):
     s.gs['lastUI'] = last_state
@@ -34,6 +38,7 @@ def level_up():
         player['stats']['attack'] += 2   # Augmente l'attaque du joueur à chaque niveau
         player['stats']['defense'] += 2  # Augmente la défense du joueur à chaque niveau
         player['stats']['speed'] += 1    # Augmente la vitesse du joueur à chaque niveau
+        player['stats']['exp'] = 0
         add_notification(f"└─> You leveled up to level {player['stats']['level']}!", "gray")
         add_notification(f"┬>Congratulation !", "green")
         
@@ -42,8 +47,7 @@ def level_up():
             player['stats']['next_lvl_exp'] = en.exp_table[current_level]
         else:
             player['stats']['next_lvl_exp'] = float('inf')  # Plus de niveaux à atteindre
-
-    
+   
 def rules():
     ui.print_game()
     i(f"{c.c['gray']}{c.s['italic']}Press enter to return to the main menu.{c.r}")
@@ -80,23 +84,20 @@ def menu():
         else:
             choice = title_screen()
             match choice:
-                case "1" | "new":
+                case "1" | "new" | "n":
                     new_game()
-                case "2" | "load":
+                case "2" | "load" | "l":
                     load_saved_game()
-                case "3" | "rules":
+                case "3" | "rules" | "r":
                     change_state('menu', 'rules')
-                case "4" | "quit":
+                case "4" | "quit" | "q":
                     quit()
-                case "help":
+                case "help" | "h":
                     change_state('menu', 'help')
                     help()
                 case _:
                     print(f"{c.c['red']}Invalid choice!{c.r}")
                     time.sleep(2)
-
-
-import json
 
 def save_game():
     with open("save.txt", "w") as file:
@@ -104,9 +105,7 @@ def save_game():
         game_state = s.gs.copy()
         game_state['map'] = map_data
         json.dump(game_state, file, indent=4, sort_keys=True)
-
-
-        
+    
 def load_game():
     with open("save.txt", "r") as file:
         saved_data = json.load(file)
@@ -121,7 +120,6 @@ def load_game():
     for key, value in saved_data.items():
         if key != 'map':
             s.gs[key] = value    
-
     
 def get_biome():
     return s.gs['map'].map[s.gs['player']['pos']['y']][s.gs['player']['pos']['x']]
@@ -133,7 +131,6 @@ def load_saved_game():
     except FileNotFoundError:
         print(f"{c.c['red']}Failed to load the game.{c.r}")
         time.sleep(2)
-
         
 def add_notification(new_notification_text, new_notification_color="white"):
     if 'notifications' not in s.gs:
@@ -163,7 +160,7 @@ def shop():
         s.gs['lastInput'] = i()
         
         match s.gs['lastInput']:
-            case "exit":
+            case "exit" | "b" | "back":
                 add_notification("You left the shop.", "magenta")
                 change_state('shop', 'play')
                 time.sleep(2)
@@ -171,7 +168,6 @@ def shop():
                 change_state('shop', 'inventory')
             case _:
                 handle_shop_interaction()
-
             
 def handle_shop_interaction():
     user_input = s.gs['lastInput'].split()
@@ -186,33 +182,29 @@ def handle_shop_interaction():
     elif command == "sell":
         sell_item(item_name)
     else:
-        add_notification("Invalid command. Use 'buy <item>' or 'sell <item>'.", "red")
-
-        
+        add_notification("- Use 'buy <item>' or 'sell <item>'.", "gray")
+        add_notification(f"\"{command} {item_name}\" - Invalid command.", "red")      
                 
 def buy_item(item_name):
     player_gold = s.gs['player']['stats']['gold']
-    available_weapons = [
-        {'type': 'weapon', 'name': 'sword', 'attack': 10, 'price': 100},
-        {'type': 'weapon', 'name': 'axe', 'attack': 15, 'price': 150},
-        {'type': 'weapon', 'name': 'bow', 'attack': 20, 'price': 200}
-    ]
-    available_armors = [
-        {'type': 'armor', 'name': 'leather', 'defense': 10, 'price': 50},
-        {'type': 'armor', 'name': 'chainmail', 'defense': 15, 'price': 100},
-        {'type': 'armor', 'name': 'iron', 'defense': 20, 'price': 150}
-    ]
+
     item_to_buy = None
 
-    for weapon in available_weapons:
+    for weapon in sh.available_weapons:
         if weapon['name'].lower() == item_name.lower():
             item_to_buy = weapon
             break
 
     if item_to_buy is None:
-        for armor in available_armors:
+        for armor in sh.available_armors:
             if armor['name'].lower() == item_name.lower():
                 item_to_buy = armor
+                break
+
+    if item_to_buy is None:
+        for potion in sh.available_potions:
+            if potion['name'].lower() == item_name.lower():
+                item_to_buy = potion
                 break
 
     if item_to_buy is None:
@@ -226,11 +218,18 @@ def buy_item(item_name):
         item_to_add = item_to_buy.copy()
         del item_to_add['price']
 
-        s.gs['player']['inventory'].append(item_to_add)
+        if item_to_add['type'] == 'potion':
+            existing_potion = next((p for p in s.gs['player']['equipment']['potions'] if p['name'] == item_to_add['name']), None)
+            if existing_potion:
+                existing_potion['amount'] += 1
+            else:
+                item_to_add['amount'] = 1
+                s.gs['player']['equipment']['potions'].append(item_to_add)
+        else:
+            s.gs['player']['inventory'].append(item_to_add)
         add_notification(f"You bought {item_name}.", "green")
     else:
         add_notification("You don't have enough gold.", "red")
-
 
 def sell_item(item_name):
     player_inventory = s.gs['player']['inventory']
@@ -254,7 +253,6 @@ def sell_item(item_name):
     s.gs['player']['stats']['gold'] += sell_price
     s.gs['player']['inventory'].remove(item_to_sell)
     add_notification(f"You sold {item_name} for {sell_price} gold.", "green")
-    
     
 def equip_item(item_name):
     if item_name == "fists":
@@ -284,56 +282,58 @@ def equip_item(item_name):
         else:
             add_notification(f"{item_name} is not a valid item to equip.", "red")
     else:
-        add_notification(f"{item_name} not found in your inventory.", "red")
-
-        
+        add_notification(f"{item_name} not found in your inventory.", "red")   
 
 def move():
     current_map = s.gs['map']
     width = current_map.width
     height = current_map.height
+    new_x, new_y = s.gs['player']['pos']['x'], s.gs['player']['pos']['y']
     
     match s.gs['dest']:
         case "w":
             if s.gs['player']['pos']['y'] > 0:
-                s.gs['player']['pos']['y'] -= 1
+                new_y -= 1
             else:
                 s.gs['map'] = Map(width, height)
-                s.gs['player']['pos']['y'] = height - 1
+                new_y = height - 1
                 add_notification("You reached the northern edge.")
         case "s":
             if s.gs['player']['pos']['y'] < height - 1:
-                s.gs['player']['pos']['y'] += 1
+                new_y += 1
             else:
                 s.gs['map'] = Map(width, height)
-                s.gs['player']['pos']['y'] = 0
+                new_y = 0
                 add_notification("You reached the southern edge.")
         case "a":
             if s.gs['player']['pos']['x'] > 0:
-                s.gs['player']['pos']['x'] -= 1
+                new_x -= 1
             else:
                 s.gs['map'] = Map(width, height)
-                s.gs['player']['pos']['x'] = width - 1
+                new_x = width - 1
                 add_notification("You reached the western edge.")
         case "d":
             if s.gs['player']['pos']['x'] < width - 1:
-                s.gs['player']['pos']['x'] += 1
+                new_x += 1
             else:
                 s.gs['map'] = Map(width, height)
-                s.gs['player']['pos']['x'] = 0
+                new_x = 0
                 add_notification("You reached the eastern edge.")
-    check_tile()
-                
-                
+    
+    # Check if the new tile is solid
+    if not current_map.map[new_y][new_x].biome['solid']:
+        s.gs['player']['pos']['x'], s.gs['player']['pos']['y'] = new_x, new_y
+        check_tile()
                 
 def battle():
-    if not s.gs['standing'] and get_biome().biome['enemy'] and random.randint(0, 100) <= 30:
+    biome = get_biome().biome
+    if not s.gs['standing'] and biome['enemy'] and random.randint(0, 100) <= 30:
         s.gs['enemy'] = random.choice(list(en.e.keys()))
-        add_notification(f"/!\ You encountered a {s.gs['enemy']}!", "red")
-        time.sleep(2)
-        s.gs['play'] = False
-        s.gs['fight'] = True
-        s.gs['standing'] = True
+        if en.e[s.gs['enemy']]['spawn_biome'] == biome['name']:
+            add_notification(f"/!\ You encountered a {s.gs['enemy']}!", "red")
+            time.sleep(2)
+            change_state('play', 'fight')
+            s.gs['standing'] = True
 
 def play():
     if s.gs['map'] == 'null':
@@ -348,40 +348,50 @@ def play():
         ui.print_game()
         s.gs['lastInput'] = i()
         
-        match s.gs['lastInput'].split():
-            case ["w"] | ["s"] | ["a"] | ["d"]:
-                s.gs['dest'] = s.gs['lastInput']
-                move()
-                battle()
-            
-            case ["save"]:
-                save_game()
-                add_notification("Game saved.", "green")
-            
-            case ["quit"]:
-                add_notification("Quiting game...", "magenta")
-                time.sleep(2)
-                change_state('play', 'menu')
-            
-            case ["life"]:
-                add_notification(f"You have {s.gs['player']['stats']['hp']} HP.", "green")
-            
-            case ["equip", *item_name_parts]:
-                item_name = " ".join(item_name_parts)  # Joindre les parties du nom de l'article avec des espaces
-                equip_item(item_name)
-            
-            case ["inventory"]:
-                change_state('play', 'inventory')
-                inventory()
+        command_parts = s.gs['lastInput'].split()
+        if command_parts:
+            command = command_parts[0]
+            item_name_parts = command_parts[1:]
+            item_name = " ".join(item_name_parts)
+
+            match command:
+                case "w" | "s" | "a" | "d":
+                    s.gs['dest'] = s.gs['lastInput']
+                    move()
+                    battle()
                 
-            case ["help"]:
-                change_state('play', 'help')
-                s.gs['lastUI'] = "play"
-                help()
-
-            case _:
-                add_notification("Invalid command.", "red")
-
+                case "save" | "sa":
+                    save_game()
+                    add_notification("Game saved.", "green")
+                
+                case "quit" | "q":
+                    add_notification("Quiting game...", "magenta")
+                    time.sleep(2)
+                    change_state('play', 'menu')
+                
+                case "life" | "l":
+                    add_notification(f"You have {s.gs['player']['stats']['hp']} HP out of {s.gs['player']['stats']['max_hp']}.", "green")
+                
+                case "equip" | "e":
+                    equip_item(item_name)
+                
+                case "inventory" | "i":
+                    change_state('play', 'inventory')
+                    inventory()
+                    
+                case "help" | "h":
+                    change_state('play', 'help')
+                    help()
+                
+                case "heal":
+                    heal()
+                
+                case 'cls' | 'clear':
+                    clear_notifications()
+                    
+                case _:
+                    add_notification(f"- Use 'help' command for help.", "gray")
+                    add_notification(f"\"{s.gs['lastInput']}\" - Invalid command.", "red")
 
 def assign_enemy_weapon():
     s.gs['enemy_stats']['weapon'] = {'name': '', 'attack': 0}
@@ -421,7 +431,25 @@ def remove_from_inventory(item_name):
             add_notification(f"You removed a {item_name} from your inventory.", "red")
             return
     add_notification(f"{item_name} not found in inventory.", "red")
-            
+          
+def clear_notifications():
+    s.gs['notifications'] = []
+    for _ in range(6):
+        s.gs['notifications'].append({"text": "", "color": "white"})
+      
+def heal():
+    healing_potion = next((p for p in s.gs['player']['equipment']['potions'] if p['name'] == 'healing'), None)
+    if healing_potion and healing_potion['amount'] > 0:
+        if (s.gs['player']['stats']['hp'] + 20) <= s.gs['player']['stats']['max_hp']:
+            s.gs['player']['stats']['hp'] += 20
+        else:
+            s.gs['player']['stats']['hp'] = s.gs['player']['stats']['max_hp']
+
+        healing_potion['amount'] -= 1
+        add_notification("- You used a health potion.", "green")
+    else:
+        add_notification("- You don't have any health potions.", "red")
+    
 def fight():
     save_game()
     
@@ -450,8 +478,15 @@ def fight():
                 choice = "mana"
             case "4":
                 choice = "escape"
-            case "inventory":
+            case "inventory" | "i":
                 change_state('fight', 'inventory')
+            case "help" | "h":
+                change_state('fight', 'help')
+                help()
+            case 'cls' | 'clear':
+                    clear_notifications()
+            case _:
+                add_notification(f"\"{s.gs['lastInput']}\" - Invalid command.", "red")
         
         match choice:
             case "attack":
@@ -480,35 +515,13 @@ def fight():
                     time.sleep(2)
                 
             case "heal":
-                healing_potion = next((p for p in s.gs['player']['equipment']['potions'] if p['name'] == 'healing'), None)
-                if healing_potion and healing_potion['amount'] > 0:
-                    if (s.gs['player']['stats']['hp'] + 20) <= s.gs['player']['stats']['max_hp']:
-                        s.gs['player']['stats']['hp'] += 20
-                    else:
-                        s.gs['player']['stats']['hp'] = s.gs['player']['stats']['max_hp']
-
-                    healing_potion['amount'] -= 1
-                    add_notification("- You used a health potion.", "green")
-                else:
-                    add_notification("- You don't have any health potions.", "red")
-                    
+                heal()
                 enemy_attack = random.randint(en.e[s.gs['enemy']]['min_atk'], en.e[s.gs['enemy']]['max_atk'])
                 s.gs['player']['stats']['hp'] -= enemy_attack
-                add_notification(f"! The {s.gs['enemy']} attacked you for {enemy_attack} damage", "red")
-                                
-            case "save":
-                save_game()
-                add_notification("Game saved.", "green")
-            
-            case "quit":
-                add_notification("Quiting game...", "magenta")
-                ui.print_game()
-                time.sleep(2)
-                s.gs['play'] = False
-                s.gs['menu'] = True
+                add_notification(f"! The {s.gs['enemy']} attacked you for {enemy_attack} damage", "red")        
                 
             case "life":
-                add_notification(f"You have {s.gs['player']['stats']['hp']} HP.", "green")
+                add_notification(f"You have {s.gs['player']['stats']['hp']} HP out of {s.gs['player']['stats']['max_hp']}.", "green")
             
 def inventory():
     s.gs['inventory'] = True
@@ -518,22 +531,21 @@ def inventory():
         s.gs['lastInput'] = i()
         
         match s.gs['lastInput'].split():
-            case ["exit"]:
+            case ["exit"] | ['back'] | ['b'] | ['']:
                 change_state('inventory', 'play')
-            case ["equip", item_name]:
+            case ["equip", item_name] | ["e", item_name]:
                 item_name = " ".join(item_name)  # In case item_name consists of multiple words
                 equip_item(item_name)
-            case ["help"]:
+            case ["help"] | ["h"]:
                 change_state('inventory', 'help')
                 help()
             case _:
-                add_notification("Invalid command.", "red")
-            
+                add_notification(f"\"{s.gs['lastInput']}\" - Invalid command.", "red")           
                 
 def help():
     s.gs['help'] = True
     while s.gs['help']:
         cls()
         ui.print_game()
-        i(f"{c.c['gray']}{c.s['italic']}Press enter to return to the main menu.{c.r}")
+        i(f"{c.c['gray']}{c.s['italic']}Press enter to go back...{c.r}")
         change_state('help', s.gs['lastUI'])
